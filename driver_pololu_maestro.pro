@@ -14,6 +14,7 @@ SOURCES += \
 
 DISTFILES += \
     CMakeLists.txt \
+    README.md \
     msg/servo_position.msg \
     msg/servo_target.msg \
     package.xml
