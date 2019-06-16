@@ -8,6 +8,10 @@ driver::driver(std::string port, unsigned int baud_rate, unsigned char device_nu
     // Open the serial port.
     driver::m_serial_port = new serial::Serial(port, baud_rate, serial::Timeout::simpleTimeout(30));
 
+    // Transmit a single 0xAA to initialize the automatic baud rate detection.
+    unsigned char initiator = 0xAA;
+    driver::m_serial_port->write(&initiator, 1);
+
     // Store the device number.
     driver::m_device_number = device_number;
 
@@ -230,9 +234,9 @@ unsigned short driver::deserialize(unsigned char *buffer)
 {
     // Create output variable.
     unsigned short output;
-    // Deserialize the little endian 7-bit buffer.
+    // Deserialize the little endian 8-bit buffer.
     output = buffer[0];
-    output |= (static_cast<unsigned short>(buffer[1]) << 7);
+    output |= (static_cast<unsigned short>(buffer[1]) << 8);
     // Convert from little endian to host.
     return le16toh(output);
 }
