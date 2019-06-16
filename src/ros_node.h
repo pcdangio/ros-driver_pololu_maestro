@@ -50,6 +50,8 @@ private:
     ///
     std::vector<unsigned char> m_channels;
 
+    unsigned short m_pwm_period;
+
     // PUBLISHERS
     std::vector<ros::Publisher> m_publishers_position;
 

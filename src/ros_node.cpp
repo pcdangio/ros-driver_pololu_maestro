@@ -24,10 +24,15 @@ ros_node::ros_node(int argc, char **argv)
     private_node.param<double>("update_rate", param_update_rate, 30.0);
     int param_device_number;
     private_node.param<int>("device_number", param_device_number, 12);
+    int param_pwm_period;
+    private_node.param<int>("pwm_period", param_pwm_period, 20);
     std::vector<int> param_channels;
     private_node.param<std::vector<int>>("channels", param_channels, {0, 1, 2, 3, 4, 5});
     bool param_publish_positions;
     private_node.param<bool>("publish_positions", param_publish_positions, false);
+
+    // Store pwm period.
+    ros_node::m_pwm_period = static_cast<unsigned char>(param_pwm_period);
 
     // Iterate through given channels.
     for(unsigned int i = 0; i < param_channels.size(); i++)
@@ -110,11 +115,37 @@ void ros_node::target_callback(const driver_pololu_maestro::servo_targetConstPtr
     // Set the speed and acceleration first.
     if(std::isnan(message->acceleration) == false)
     {
-        ros_node::m_driver->set_acceleration(channel, static_cast<unsigned short>(message->acceleration * 255));
+        // Convert from %/sec^2 to appropriate units.
+        // Appropriate units are based on the PWM period.
+        float conversion = 0.002f * std::pow(static_cast<float>(ros_node::m_pwm_period), 2.0f);
+        if(ros_node::m_pwm_period < 20)
+        {
+            conversion *= 8.0f;
+        }
+        else
+        {
+            conversion *= 2.0f;
+        }
+        // Conversion is now at %/sec^2 to the value the maestro expects.
+        // Round to nearest value, and coerce to 0 to 255.
+        unsigned short accel = static_cast<unsigned short>(std::max(std::min(static_cast<int>(std::round(message->acceleration * conversion)), 255), 0));
+
+        ros_node::m_driver->set_acceleration(channel, accel);
     }
     if(std::isnan(message->speed) == false)
     {
-        ros_node::m_driver->set_speed(channel, static_cast<unsigned short>(message->speed * 16383));
+        // Convert from %/sec to appropriate units.
+        // Appropriate units are based on the PWM perid.
+        float conversion = 2.0f * static_cast<float>(ros_node::m_pwm_period);
+        if(ros_node::m_pwm_period >= 20)
+        {
+            conversion *= 0.5f;
+        }
+        // Conversion is now at %/sec^2 to the value the maestro expects.
+        // Round to the nearest value, and coerce to 0 to 16383.
+        unsigned short speed = static_cast<unsigned short>(std::max(std::min(static_cast<int>(std::round(message->speed * conversion)), 16383), 0));
+
+        ros_node::m_driver->set_speed(channel, speed);
     }
 
     // Set the target.
