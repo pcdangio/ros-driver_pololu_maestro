@@ -4,14 +4,19 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 INCLUDEPATH += \
-    /opt/ros/melodic/include
+    /opt/ros/melodic/include \
+    $$PWD/../../devel/include
 
 SOURCES += \
-    src/driver.cpp
+    src/driver.cpp \
+    src/main.cpp \
+    src/ros_node.cpp
 
 DISTFILES += \
     CMakeLists.txt \
+    msg/servo_target.msg \
     package.xml
 
 HEADERS += \
-    src/driver.h
+    src/driver.h \
+    src/ros_node.h
