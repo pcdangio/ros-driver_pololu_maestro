@@ -147,8 +147,8 @@ void ros_node::target_callback(const driver_pololu_maestro::servo_targetConstPtr
     }
 
     // Set the target.
-    // Clip the target to -500.0 to 500.0.
-    float target_f = std::max(std::min(message->position, 500.0f), -500.0f);
+    // Clip the target to -500.0 to 2500.0.
+    float target_f = std::max(std::min(message->position, 2500.0f), -500.0f);
     // Convert microseconds into microsecond quarters.
     unsigned short target = static_cast<unsigned short>(std::round(target_f * 4.0f));
     ros_node::m_driver->set_target(channel, target);
