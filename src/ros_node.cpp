@@ -82,11 +82,9 @@ void ros_node::spin()
                 try
                 {
                     // Read the position from the Maestro.
-                    unsigned short position_raw = ros_node::m_driver->get_position(channel);
-                    // Convert the raw position to a percentage.
-                    float position = ((static_cast<float>(position_raw) / 4.0f) - 1500.0f)/500.0f;
-                    // Coerce to the allowable range.
-                    position = std::max(std::min(position, 1.0f), -1.0f);
+                    unsigned short position_qus = ros_node::m_driver->get_position(channel);
+                    // Convert the quarter microsecond position to microsecond position.
+                    float position = static_cast<float>(position_qus) / 4.0f;
 
                     // Create the position message.
                     driver_pololu_maestro::servo_position message;
@@ -117,7 +115,7 @@ void ros_node::target_callback(const driver_pololu_maestro::servo_targetConstPtr
     {
         // Convert from %/sec^2 to appropriate units.
         // Appropriate units are based on the PWM period.
-        float conversion = 0.002f * std::pow(static_cast<float>(ros_node::m_pwm_period), 2.0f);
+        float conversion = 0.000004f * std::pow(static_cast<float>(ros_node::m_pwm_period), 2.0f);
         if(ros_node::m_pwm_period < 20)
         {
             conversion *= 8.0f;
@@ -136,7 +134,7 @@ void ros_node::target_callback(const driver_pololu_maestro::servo_targetConstPtr
     {
         // Convert from %/sec to appropriate units.
         // Appropriate units are based on the PWM perid.
-        float conversion = 2.0f * static_cast<float>(ros_node::m_pwm_period);
+        float conversion = 0.004f * static_cast<float>(ros_node::m_pwm_period);
         if(ros_node::m_pwm_period >= 20)
         {
             conversion *= 0.5f;
@@ -149,9 +147,9 @@ void ros_node::target_callback(const driver_pololu_maestro::servo_targetConstPtr
     }
 
     // Set the target.
-    // Clip the target to -1.0 to 1.0.
-    float target_f = std::max(std::min(message->position, 1.0f), -1.0f);
-    // Convert percentage into microsecond quarters.
-    unsigned short target = static_cast<unsigned short>((target_f * 500.0f + 1500.0f) * 4.0f);
+    // Clip the target to -500.0 to 500.0.
+    float target_f = std::max(std::min(message->position, 500.0f), -500.0f);
+    // Convert microseconds into microsecond quarters.
+    unsigned short target = static_cast<unsigned short>(std::round(target_f * 4.0f));
     ros_node::m_driver->set_target(channel, target);
 }
