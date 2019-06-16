@@ -30,14 +30,6 @@ public:
     void spin();
 
 private:
-    // ENUMERATIONS
-    enum class maestro_type
-    {
-        MICRO_MAESTRO_6 = 6,
-        MINI_MAESTRO_12 = 12,
-        MINI_MAESTRO_18 = 18,
-        MINI_MAESTRO_24 = 24,
-    };
 
     // VARIABLES
     ///
@@ -52,6 +44,11 @@ private:
     /// \brief m_rate The rate at which to run the node.
     ///
     ros::Rate* m_rate;
+
+    ///
+    /// \brief m_channels Stores the operational channels.
+    ///
+    std::vector<unsigned char> m_channels;
 
     // PUBLISHERS
     std::vector<ros::Publisher> m_publishers_position;
