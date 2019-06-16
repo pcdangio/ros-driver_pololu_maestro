@@ -32,7 +32,7 @@ ros_node::ros_node(int argc, char **argv)
     {
         std::stringstream topic_name;
         topic_name << ros::this_node::getName() << "/set_target_" << param_channels.at(i);
-        ros_node::m_subscribers_target.push_back(ros_node::m_node->subscribe<driver_pololu_maestro::servo_target>("", 1, std::bind(&ros_node::target_callback, this, std::placeholders::_1, param_channels.at(i))));
+        ros_node::m_subscribers_target.push_back(ros_node::m_node->subscribe<driver_pololu_maestro::servo_target>(topic_name.str(), 1, std::bind(&ros_node::target_callback, this, std::placeholders::_1, param_channels.at(i))));
     }
 
     // Set up publishers.
