@@ -160,7 +160,16 @@ void ros_node::target_callback(const driver_pololu_maestro::servo_targetConstPtr
 void ros_node::handle_errors()
 {
     // First read the errors.
-    unsigned short errors = ros_node::m_driver->get_errors();
+    unsigned short errors = 0;
+
+    try
+    {
+        errors = ros_node::m_driver->get_errors();
+    }
+    catch(std::exception& e)
+    {
+        ROS_ERROR_STREAM(e.what());
+    }
 
     // Check each bit in the field.
 
