@@ -10,7 +10,7 @@ ros_node::ros_node(int argc, char **argv)
     ros::init(argc, argv, "maestro");
 
     // Get the node's handle.
-    ros_node::m_node = new ros::NodeHandle();
+    ros_node::m_node = new ros::NodeHandle("servo_controller");
 
     // Read parameters.
     ros::NodeHandle private_node("~");
@@ -42,14 +42,14 @@ ros_node::ros_node(int argc, char **argv)
 
         // Set up subscriber for this channel.
         std::stringstream subscriber_topic;
-        subscriber_topic << ros::this_node::getName() << "/set_target/channel_" << param_channels.at(i);
+        subscriber_topic << "set_target/channel_" << param_channels.at(i);
         ros_node::m_subscribers_target.push_back(ros_node::m_node->subscribe<driver_pololu_maestro::servo_target>(subscriber_topic.str(), 1, std::bind(&ros_node::target_callback, this, std::placeholders::_1, param_channels.at(i))));
 
         // Add position publisher.
         if(param_publish_positions == true)
         {
             std::stringstream publisher_topic;
-            publisher_topic << ros::this_node::getName() << "/position/channel_" << param_channels.at(i);
+            publisher_topic << "position/channel_" << param_channels.at(i);
             ros_node::m_publishers_position.push_back(ros_node::m_node->advertise<driver_pololu_maestro::servo_position>(publisher_topic.str(), 1));
         }
     }
