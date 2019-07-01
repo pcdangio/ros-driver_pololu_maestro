@@ -72,6 +72,12 @@ private:
     /// \param channel The channel associated with the subscriber/message.
     ///
     void target_callback(const driver_pololu_maestro::servo_targetConstPtr& message, unsigned char channel);
+
+    // METHODS
+    ///
+    /// \brief handle_errors Processes and logs errors read from the Maestro
+    ///
+    void handle_errors();
 };
 
 #endif // ROS_NODE_H

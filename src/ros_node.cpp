@@ -100,6 +100,9 @@ void ros_node::spin()
             }
         }
 
+        // Read out and clear any errors.
+        ros_node::handle_errors();
+
         // Spin the ros node once.
         ros::spinOnce();
 
@@ -152,4 +155,57 @@ void ros_node::target_callback(const driver_pololu_maestro::servo_targetConstPtr
     // Convert microseconds into microsecond quarters.
     unsigned short target = static_cast<unsigned short>(std::round(target_f * 4.0f));
     ros_node::m_driver->set_target(channel, target);
+}
+
+void ros_node::handle_errors()
+{
+    // First read the errors.
+    unsigned short errors = ros_node::m_driver->get_errors();
+
+    // Check each bit in the field.
+
+    if(errors & static_cast<unsigned short>(driver::error_type::SERIAL_SIGNAL_ERROR))
+    {
+        ROS_ERROR_STREAM("SERIAL_SIGNAL_ERROR: Possible baudrate mismatch.");
+    }
+
+    if(errors & static_cast<unsigned short>(driver::error_type::SERIAL_OVERRUN_ERROR))
+    {
+        ROS_ERROR_STREAM("SERIAL_OVERRUN_ERROR: UART internal buffer full.");
+    }
+
+    if(errors & static_cast<unsigned short>(driver::error_type::SERIAL_BUFFER_FULL))
+    {
+        ROS_ERROR_STREAM("SERIAL_BUFFER_FULL: RX buffer full and bytes are being lost.");
+    }
+
+    if(errors & static_cast<unsigned short>(driver::error_type::SERIAL_CRC_ERROR))
+    {
+        ROS_ERROR_STREAM("SERIAL_CRC_RROR: CRC mismatch detected on last received packet.");
+    }
+
+    if(errors & static_cast<unsigned short>(driver::error_type::SERIAL_PROTOCOL_ERROR))
+    {
+        ROS_ERROR_STREAM("SERIAL_PROTOCOL_ERROR: Invalid packet format received.");
+    }
+
+    if(errors & static_cast<unsigned short>(driver::error_type::SERIAL_TIMEOUT))
+    {
+        ROS_ERROR_STREAM("SERIAL_TIMEOUT: Timeout occured since last packet was received.");
+    }
+
+    if(errors & static_cast<unsigned short>(driver::error_type::SCRIPT_CALL_STACK_ERROR))
+    {
+        ROS_ERROR_STREAM("SCRIPT_CALL_STACK_ERROR: Script caused over/underflow in stack.");
+    }
+
+    if(errors & static_cast<unsigned short>(driver::error_type::SCRIPT_CALL_STACK_ERROR))
+    {
+        ROS_ERROR_STREAM("SCRIPT_CALL_STACK_ERROR: Script caused over/underflow in call stack.");
+    }
+
+    if(errors & static_cast<unsigned short>(driver::error_type::SCRIPT_PROGRAM_COUNTER_ERROR))
+    {
+        ROS_ERROR_STREAM("SCRIPT_PROGRAM_COUNTER_ERROR: Script caused program counter has gone out of bounds.");
+    }
 }
