@@ -19,15 +19,15 @@ public:
     ///
     enum class error_type
     {
-        SERIAL_SIGNAL_ERROR = 0x0000,               ///< Occurs when there is a baud rate mismatch.
-        SERIAL_OVERRUN_ERROR = 0x0002,              ///< The Maestro's internal UART buffer has overrun.
-        SERIAL_BUFFER_FULL = 0x0004,                ///< The Maestro's RX buffer has overrun.
-        SERIAL_CRC_ERROR = 0x0008,                  ///< CRC mismatch.
-        SERIAL_PROTOCOL_ERROR = 0x0016,             ///< Incorrectly formatted data received.
-        SERIAL_TIMEOUT = 0x0032,                    ///< Serial timeout period has elapsed.
-        SCRIPT_STACK_ERROR = 0x0064,                ///< User script stack underflow or overflow.
-        SCRIPT_CALL_STACK_ERROR = 0x0128,           ///< User script call stack underflow or overflow.
-        SCRIPT_PROGRAM_COUNTER_ERROR = 0x0256       ///< User script caused program counter to go out of bounds.
+        SERIAL_SIGNAL_ERROR = 0,               ///< Occurs when there is a baud rate mismatch.
+        SERIAL_OVERRUN_ERROR = 2,              ///< The Maestro's internal UART buffer has overrun.
+        SERIAL_BUFFER_FULL = 4,                ///< The Maestro's RX buffer has overrun.
+        SERIAL_CRC_ERROR = 8,                  ///< CRC mismatch.
+        SERIAL_PROTOCOL_ERROR = 16,             ///< Incorrectly formatted data received.
+        SERIAL_TIMEOUT = 32,                    ///< Serial timeout period has elapsed.
+        SCRIPT_STACK_ERROR = 64,                ///< User script stack underflow or overflow.
+        SCRIPT_CALL_STACK_ERROR = 128,           ///< User script call stack underflow or overflow.
+        SCRIPT_PROGRAM_COUNTER_ERROR = 256       ///< User script caused program counter to go out of bounds.
     };
 
 
