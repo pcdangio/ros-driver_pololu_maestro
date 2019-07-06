@@ -47,20 +47,20 @@ A driver for the Pololu [Maestro].
 
 
 #### Published Topics
-* **`node_name/position/channel_X`** ([driver_pololu_maestro/servo_position](https://github.com/pcdangio/ros-driver_pololu_maestro/blob/master/msg/servo_position.msg))
+* **`servo_controller/position/channel_X`** ([driver_pololu_maestro/servo_position](https://github.com/pcdangio/ros-driver_pololu_maestro/blob/master/msg/servo_position.msg))
 
         Provides the current expected position of a servo in PWM microseconds.
         Multiple versions of this topic are published based on the specified channels in use on the Maestro.  See "channels" in the Parameters section below.
         These topics will only be published if specified in the node parameters.  See "publish_positions" in the Parameters section below.
-        "node_name" is the name assigned to the node.  "channel_X" is the channel that the servo is connected to on the Maestro, where X is the channel number.
+        "channel_X" is the channel that the servo is connected to on the Maestro, where X is the channel number.
 
 #### Subscribed Topics
 
-* **`node_name/set_target/channel_X`** ([driver_pololu_maestro/servo_target](https://github.com/pcdangio/ros-driver_pololu_maestro/blob/master/msg/servo_target.msg))
+* **`servo_controller/set_target/channel_X`** ([driver_pololu_maestro/servo_target](https://github.com/pcdangio/ros-driver_pololu_maestro/blob/master/msg/servo_target.msg))
 
         Sets the target position, speed limit, and acceleration of a specified servo in PWM microseconds.
         Multiple versions of this topic are subscribed to based on the specified channels in use on the Maestro.  See "channels" in the Parameters section below.
-        "node_name" is the name assigned to the node.  "channel_X" is the channel that the servo is connected to on the Maestro, where X is the channel number.
+        "channel_X" is the channel that the servo is connected to on the Maestro, where X is the channel number.
 
 #### Parameters
 
