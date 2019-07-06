@@ -47,7 +47,7 @@ A driver for the Pololu [Maestro].
 
 
 #### Published Topics
-* **`servo_controller/position/channel_X`** ([driver_pololu_maestro/servo_position](https://github.com/pcdangio/ros-driver_pololu_maestro/blob/master/msg/servo_position.msg))
+* **`servo_controller/position/channel_X`** ([actuator_msgs/ServoState](https://github.com/pcdangio/ros-actuator_msgs/blob/master/msg/ServoState.msg))
 
         Provides the current expected position of a servo in PWM microseconds.
         Multiple versions of this topic are published based on the specified channels in use on the Maestro.  See "channels" in the Parameters section below.
@@ -56,7 +56,7 @@ A driver for the Pololu [Maestro].
 
 #### Subscribed Topics
 
-* **`servo_controller/set_target/channel_X`** ([driver_pololu_maestro/servo_target](https://github.com/pcdangio/ros-driver_pololu_maestro/blob/master/msg/servo_target.msg))
+* **`servo_controller/set_target/channel_X`** ([actuator_msgs/ServoCommand](https://github.com/pcdangio/ros-actuator_msgs/blob/master/msg/ServoCommand.msg))
 
         Sets the target position, speed limit, and acceleration of a specified servo in PWM microseconds.
         Multiple versions of this topic are subscribed to based on the specified channels in use on the Maestro.  See "channels" in the Parameters section below.
