@@ -55,20 +55,20 @@ private:
 
     // PUBLISHERS
     ///
-    /// \brief m_publishers_position A vector of servo_position publishers.
+    /// \brief m_publishers_state A vector of ServoState publishers.
     ///
-    std::vector<ros::Publisher> m_publishers_position;
+    std::vector<ros::Publisher> m_publishers_state;
 
     // SUBSCRIBERS
     ///
-    /// \brief m_subscribers_target A vector of servo_target subscribers.
+    /// \brief m_subscribers_target A vector of ServoTarget subscribers.
     ///
     std::vector<ros::Subscriber> m_subscribers_target;
 
     // CALLBACKS
     ///
-    /// \brief target_callback The callback for servo_target messages.
-    /// \param message The received servo_target message.
+    /// \brief target_callback The callback for ServoTarget messages.
+    /// \param message The received ServoTarget message.
     /// \param channel The channel associated with the subscriber/message.
     ///
     void target_callback(const actuator_msgs::ServoTargetConstPtr& message, unsigned char channel);

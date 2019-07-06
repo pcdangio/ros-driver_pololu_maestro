@@ -50,7 +50,7 @@ ros_node::ros_node(int argc, char **argv)
         {
             std::stringstream publisher_topic;
             publisher_topic << ros::this_node::getName() << "state/channel_" << param_channels.at(i);
-            ros_node::m_publishers_position.push_back(ros_node::m_node->advertise<actuator_msgs::ServoState>(publisher_topic.str(), 1));
+            ros_node::m_publishers_state.push_back(ros_node::m_node->advertise<actuator_msgs::ServoState>(publisher_topic.str(), 1));
         }
     }
 
@@ -73,7 +73,7 @@ void ros_node::spin()
     while(ros::ok())
     {
         // Publish positions if configured to do so.
-        if(ros_node::m_publishers_position.size() > 0)
+        if(ros_node::m_publishers_state.size() > 0)
         {
             for(unsigned int i = 0; i < ros_node::m_channels.size(); i++)
             {
@@ -91,7 +91,7 @@ void ros_node::spin()
                     message.position = position;
 
                     // Publish the message.
-                    ros_node::m_publishers_position.at(i).publish(message);
+                    ros_node::m_publishers_state.at(i).publish(message);
                 }
                 catch(...)
                 {
