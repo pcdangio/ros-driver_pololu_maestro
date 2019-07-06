@@ -1,6 +1,6 @@
 #include "ros_node.h"
 
-#include <driver_pololu_maestro/servo_position.h>
+#include <actuator_msgs/ServoState.h>
 
 #include <sstream>
 
@@ -28,8 +28,8 @@ ros_node::ros_node(int argc, char **argv)
     private_node.param<int>("pwm_period", param_pwm_period, 20);
     std::vector<int> param_channels;
     private_node.param<std::vector<int>>("channels", param_channels, {0, 1, 2, 3, 4, 5});
-    bool param_publish_positions;
-    private_node.param<bool>("publish_positions", param_publish_positions, false);
+    bool param_publish_states;
+    private_node.param<bool>("publish_states", param_publish_states, false);
 
     // Store pwm period.
     ros_node::m_pwm_period = static_cast<unsigned char>(param_pwm_period);
@@ -43,14 +43,14 @@ ros_node::ros_node(int argc, char **argv)
         // Set up subscriber for this channel.
         std::stringstream subscriber_topic;
         subscriber_topic << ros::this_node::getName() << "/set_target/channel_" << param_channels.at(i);
-        ros_node::m_subscribers_target.push_back(ros_node::m_node->subscribe<driver_pololu_maestro::servo_target>(subscriber_topic.str(), 1, std::bind(&ros_node::target_callback, this, std::placeholders::_1, param_channels.at(i))));
+        ros_node::m_subscribers_target.push_back(ros_node::m_node->subscribe<actuator_msgs::ServoTarget>(subscriber_topic.str(), 1, std::bind(&ros_node::target_callback, this, std::placeholders::_1, static_cast<unsigned char>(param_channels.at(i)))));
 
         // Add position publisher.
-        if(param_publish_positions == true)
+        if(param_publish_states == true)
         {
             std::stringstream publisher_topic;
-            publisher_topic << ros::this_node::getName() << "/position/channel_" << param_channels.at(i);
-            ros_node::m_publishers_position.push_back(ros_node::m_node->advertise<driver_pololu_maestro::servo_position>(publisher_topic.str(), 1));
+            publisher_topic << ros::this_node::getName() << "/state/channel_" << param_channels.at(i);
+            ros_node::m_publishers_position.push_back(ros_node::m_node->advertise<actuator_msgs::ServoState>(publisher_topic.str(), 1));
         }
     }
 
@@ -87,7 +87,7 @@ void ros_node::spin()
                     float position = static_cast<float>(position_qus) / 4.0f;
 
                     // Create the position message.
-                    driver_pololu_maestro::servo_position message;
+                    actuator_msgs::ServoState message;
                     message.position = position;
 
                     // Publish the message.
@@ -108,7 +108,7 @@ void ros_node::spin()
     }
 }
 
-void ros_node::target_callback(const driver_pololu_maestro::servo_targetConstPtr &message, unsigned char channel)
+void ros_node::target_callback(const actuator_msgs::ServoTargetConstPtr &message, unsigned char channel)
 {
     // Set the speed and acceleration first.
     if(std::isnan(message->acceleration) == false)
@@ -130,7 +130,7 @@ void ros_node::target_callback(const driver_pololu_maestro::servo_targetConstPtr
 
         ros_node::m_driver->set_acceleration(channel, accel);
     }
-    if(std::isnan(message->speed) == false)
+    if(std::isnan(message->velocity) == false)
     {
         // Convert from %/sec to appropriate units.
         // Appropriate units are based on the PWM perid.
@@ -141,7 +141,7 @@ void ros_node::target_callback(const driver_pololu_maestro::servo_targetConstPtr
         }
         // Conversion is now at %/sec^2 to the value the maestro expects.
         // Round to the nearest value, and coerce to 0 to 16383.
-        unsigned short speed = static_cast<unsigned short>(std::max(std::min(static_cast<int>(std::round(message->speed * conversion)), 16383), 0));
+        unsigned short speed = static_cast<unsigned short>(std::max(std::min(static_cast<int>(std::round(message->velocity * conversion)), 16383), 0));
 
         ros_node::m_driver->set_speed(channel, speed);
     }

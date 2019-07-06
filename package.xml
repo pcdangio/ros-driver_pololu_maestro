@@ -10,8 +10,8 @@
   <maintainer email="pcdangio@todo.todo">Paul D'Angio</maintainer>
 
   <buildtool_depend>catkin</buildtool_depend>
-  <build_depend>message_generation</build_depend>
   <depend>roscpp</depend>
   <depend>serial</depend>
+  <depend>actuator_msgs</depend>
 
 </package>

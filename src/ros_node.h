@@ -6,7 +6,7 @@
 #include "driver.h"
 
 #include <ros/ros.h>
-#include <driver_pololu_maestro/servo_target.h>
+#include <actuator_msgs/ServoTarget.h>
 
 ///
 /// \brief Implements the driver's ROS node functionality.
@@ -71,7 +71,7 @@ private:
     /// \param message The received servo_target message.
     /// \param channel The channel associated with the subscriber/message.
     ///
-    void target_callback(const driver_pololu_maestro::servo_targetConstPtr& message, unsigned char channel);
+    void target_callback(const actuator_msgs::ServoTargetConstPtr& message, unsigned char channel);
 };
 
 #endif // ROS_NODE_H
