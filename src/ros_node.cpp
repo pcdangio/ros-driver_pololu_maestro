@@ -42,14 +42,14 @@ ros_node::ros_node(int argc, char **argv)
 
         // Set up subscriber for this channel.
         std::stringstream subscriber_topic;
-        subscriber_topic << ros::this_node::getName() << "/set_target/channel_" << param_channels.at(i);
+        subscriber_topic << ros::this_node::getName() << "set_target/channel_" << param_channels.at(i);
         ros_node::m_subscribers_target.push_back(ros_node::m_node->subscribe<actuator_msgs::ServoTarget>(subscriber_topic.str(), 1, std::bind(&ros_node::target_callback, this, std::placeholders::_1, static_cast<unsigned char>(param_channels.at(i)))));
 
         // Add position publisher.
         if(param_publish_states == true)
         {
             std::stringstream publisher_topic;
-            publisher_topic << ros::this_node::getName() << "/state/channel_" << param_channels.at(i);
+            publisher_topic << ros::this_node::getName() << "state/channel_" << param_channels.at(i);
             ros_node::m_publishers_position.push_back(ros_node::m_node->advertise<actuator_msgs::ServoState>(publisher_topic.str(), 1));
         }
     }
