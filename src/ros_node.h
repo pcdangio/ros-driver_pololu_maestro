@@ -6,7 +6,7 @@
 #include "driver.h"
 
 #include <ros/ros.h>
-#include <actuator_msgs/ServoTarget.h>
+#include <actuator_msgs/servo_target.h>
 
 ///
 /// \brief Implements the driver's ROS node functionality.
@@ -71,7 +71,7 @@ private:
     /// \param message The received ServoTarget message.
     /// \param channel The channel associated with the subscriber/message.
     ///
-    void target_callback(const actuator_msgs::ServoTargetConstPtr& message, unsigned char channel);
+    void target_callback(const actuator_msgs::servo_targetConstPtr& message, unsigned char channel);
 
     // METHODS
     ///

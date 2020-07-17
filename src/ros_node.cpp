@@ -1,6 +1,6 @@
 #include "ros_node.h"
 
-#include <actuator_msgs/ServoState.h>
+#include <actuator_msgs/servo_state.h>
 
 #include <sstream>
 
@@ -43,14 +43,14 @@ ros_node::ros_node(int argc, char **argv)
         // Set up subscriber for this channel.
         std::stringstream subscriber_topic;
         subscriber_topic << "set_target/channel_" << param_channels.at(i);
-        ros_node::m_subscribers_target.push_back(private_node.subscribe<actuator_msgs::ServoTarget>(subscriber_topic.str(), 1, std::bind(&ros_node::target_callback, this, std::placeholders::_1, static_cast<unsigned char>(param_channels.at(i)))));
+        ros_node::m_subscribers_target.push_back(private_node.subscribe<actuator_msgs::servo_target>(subscriber_topic.str(), 1, std::bind(&ros_node::target_callback, this, std::placeholders::_1, static_cast<unsigned char>(param_channels.at(i)))));
 
         // Add position publisher.
         if(param_publish_states == true)
         {
             std::stringstream publisher_topic;
             publisher_topic << "state/channel_" << param_channels.at(i);
-            ros_node::m_publishers_state.push_back(private_node.advertise<actuator_msgs::ServoState>(publisher_topic.str(), 1));
+            ros_node::m_publishers_state.push_back(private_node.advertise<actuator_msgs::servo_state>(publisher_topic.str(), 1));
         }
     }
 
@@ -87,7 +87,7 @@ void ros_node::spin()
                     float position = static_cast<float>(position_qus) / 4.0f;
 
                     // Create the position message.
-                    actuator_msgs::ServoState message;
+                    actuator_msgs::servo_state message;
                     message.position = position;
 
                     // Publish the message.
@@ -111,7 +111,7 @@ void ros_node::spin()
     }
 }
 
-void ros_node::target_callback(const actuator_msgs::ServoTargetConstPtr &message, unsigned char channel)
+void ros_node::target_callback(const actuator_msgs::servo_targetConstPtr &message, unsigned char channel)
 {
     // Set the speed and acceleration first.
     if(std::isnan(message->acceleration) == false)
