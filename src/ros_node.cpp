@@ -4,7 +4,8 @@
 
 #include <sstream>
 
-ros_node::ros_node(int argc, char **argv)
+// CONSTRUCTORS
+ros_node::ros_node(int32_t argc, char **argv)
 {
     // Initialize the ROS node.
     ros::init(argc, argv, "maestro");
@@ -14,36 +15,28 @@ ros_node::ros_node(int argc, char **argv)
 
     // Read parameters.
     ros::NodeHandle private_node("~");
-    std::string param_serial_port;
-    private_node.param<std::string>("serial_port", param_serial_port, "/dev/ttyTHS2");
-    int param_baud_rate;
-    private_node.param<int>("baud_rate", param_baud_rate, 57600);
-    bool param_crc_enabled;
-    private_node.param<bool>("crc_enabled", param_crc_enabled, false);
-    double param_update_rate;
-    private_node.param<double>("update_rate", param_update_rate, 30.0);
-    int param_device_number;
-    private_node.param<int>("device_number", param_device_number, 12);
-    int param_pwm_period;
-    private_node.param<int>("pwm_period", param_pwm_period, 20);
-    std::vector<int> param_channels;
-    private_node.param<std::vector<int>>("channels", param_channels, {0, 1, 2, 3, 4, 5});
-    bool param_publish_states;
-    private_node.param<bool>("publish_states", param_publish_states, false);
+    std::string param_serial_port = private_node.param<std::string>("serial_port", "/dev/ttyTHS2");
+    int32_t param_baud_rate = private_node.param<int32_t>("baud_rate", 57600);
+    bool param_crc_enabled = private_node.param<bool>("crc_enabled", false);
+    double param_update_rate = private_node.param<double>("update_rate", 30.0);
+    int32_t param_device_number = private_node.param<int32_t>("device_number", 12);
+    int32_t param_pwm_period = private_node.param<int32_t>("pwm_period", 20);
+    std::vector<int32_t> param_channels = private_node.param<std::vector<int32_t>>("channels", {0, 1, 2, 3, 4, 5});
+    bool param_publish_states = private_node.param<bool>("publish_states", false);
 
     // Store pwm period.
-    ros_node::m_pwm_period = static_cast<unsigned char>(param_pwm_period);
+    ros_node::m_pwm_period = static_cast<uint8_t>(param_pwm_period);
 
     // Iterate through given channels.
-    for(unsigned int i = 0; i < param_channels.size(); i++)
+    for(uint32_t i = 0; i < param_channels.size(); i++)
     {
         // Add channel to internal storage.
-        ros_node::m_channels.push_back(static_cast<unsigned char>(param_channels.at(i)));
+        ros_node::m_channels.push_back(static_cast<uint8_t>(param_channels.at(i)));
 
         // Set up subscriber for this channel.
         std::stringstream subscriber_topic;
         subscriber_topic << "set_target/channel_" << param_channels.at(i);
-        ros_node::m_subscribers_target.push_back(private_node.subscribe<actuator_msgs::servo_target>(subscriber_topic.str(), 1, std::bind(&ros_node::target_callback, this, std::placeholders::_1, static_cast<unsigned char>(param_channels.at(i)))));
+        ros_node::m_subscribers_target.push_back(private_node.subscribe<actuator_msgs::servo_target>(subscriber_topic.str(), 1, std::bind(&ros_node::target_callback, this, std::placeholders::_1, static_cast<uint8_t>(param_channels.at(i)))));
 
         // Add position publisher.
         if(param_publish_states == true)
@@ -58,7 +51,7 @@ ros_node::ros_node(int argc, char **argv)
     ros_node::m_rate = new ros::Rate(param_update_rate);
 
     // Create a new driver.
-    ros_node::m_driver = new driver(param_serial_port, static_cast<unsigned int>(param_baud_rate), static_cast<unsigned char>(param_device_number), param_crc_enabled);
+    ros_node::m_driver = new driver(param_serial_port, static_cast<uint32_t>(param_baud_rate), static_cast<uint8_t>(param_device_number), param_crc_enabled);
 }
 ros_node::~ros_node()
 {
@@ -68,6 +61,7 @@ ros_node::~ros_node()
     delete ros_node::m_driver;
 }
 
+// SPIN
 void ros_node::spin()
 {
     while(ros::ok())
@@ -75,14 +69,14 @@ void ros_node::spin()
         // Publish positions if configured to do so.
         if(ros_node::m_publishers_state.size() > 0)
         {
-            for(unsigned int i = 0; i < ros_node::m_channels.size(); i++)
+            for(uint32_t i = 0; i < ros_node::m_channels.size(); i++)
             {
-                unsigned char& channel = ros_node::m_channels.at(i);
+                uint8_t& channel = ros_node::m_channels.at(i);
 
                 try
                 {
                     // Read the position from the Maestro.
-                    unsigned short position_qus = ros_node::m_driver->get_position(channel);
+                    uint16_t position_qus = ros_node::m_driver->get_position(channel);
                     // Convert the quarter microsecond position to microsecond position.
                     float position = static_cast<float>(position_qus) / 4.0f;
 
@@ -111,7 +105,8 @@ void ros_node::spin()
     }
 }
 
-void ros_node::target_callback(const actuator_msgs::servo_targetConstPtr &message, unsigned char channel)
+// CALLBACKS
+void ros_node::target_callback(const actuator_msgs::servo_targetConstPtr &message, uint8_t channel)
 {
     // Set the speed and acceleration first.
     if(std::isnan(message->acceleration) == false)
@@ -129,7 +124,7 @@ void ros_node::target_callback(const actuator_msgs::servo_targetConstPtr &messag
         }
         // Conversion is now at %/sec^2 to the value the maestro expects.
         // Round to nearest value, and coerce to 0 to 255.
-        unsigned short accel = static_cast<unsigned short>(std::max(std::min(static_cast<int>(std::round(message->acceleration * conversion)), 255), 0));
+        uint16_t accel = static_cast<uint16_t>(std::max(std::min(static_cast<int32_t>(std::round(message->acceleration * conversion)), 255), 0));
 
         ros_node::m_driver->set_acceleration(channel, accel);
     }
@@ -144,7 +139,7 @@ void ros_node::target_callback(const actuator_msgs::servo_targetConstPtr &messag
         }
         // Conversion is now at %/sec^2 to the value the maestro expects.
         // Round to the nearest value, and coerce to 0 to 16383.
-        unsigned short speed = static_cast<unsigned short>(std::max(std::min(static_cast<int>(std::round(message->velocity * conversion)), 16383), 0));
+        uint16_t speed = static_cast<uint16_t>(std::max(std::min(static_cast<int32_t>(std::round(message->velocity * conversion)), 16383), 0));
 
         ros_node::m_driver->set_speed(channel, speed);
     }
@@ -153,14 +148,15 @@ void ros_node::target_callback(const actuator_msgs::servo_targetConstPtr &messag
     // Clip the target to -500.0 to 2500.0.
     float target_f = std::max(std::min(message->position, 2500.0f), -500.0f);
     // Convert microseconds into microsecond quarters.
-    unsigned short target = static_cast<unsigned short>(std::round(target_f * 4.0f));
+    uint16_t target = static_cast<uint16_t>(std::round(target_f * 4.0f));
     ros_node::m_driver->set_target(channel, target);
 }
 
+// ERROR HANDLING
 void ros_node::handle_errors()
 {
     // First read the errors.
-    unsigned short errors = 0;
+    uint16_t errors = 0;
 
     try
     {
@@ -173,47 +169,47 @@ void ros_node::handle_errors()
 
     // Check each bit in the field.
 
-    if(errors & static_cast<unsigned short>(driver::error_type::SERIAL_SIGNAL_ERROR))
+    if(errors & static_cast<uint16_t>(driver::error_type::SERIAL_SIGNAL_ERROR))
     {
         ROS_ERROR_STREAM("SERIAL_SIGNAL_ERROR: Possible baudrate mismatch.");
     }
 
-    if(errors & static_cast<unsigned short>(driver::error_type::SERIAL_OVERRUN_ERROR))
+    if(errors & static_cast<uint16_t>(driver::error_type::SERIAL_OVERRUN_ERROR))
     {
         ROS_ERROR_STREAM("SERIAL_OVERRUN_ERROR: UART internal buffer full.");
     }
 
-    if(errors & static_cast<unsigned short>(driver::error_type::SERIAL_BUFFER_FULL))
+    if(errors & static_cast<uint16_t>(driver::error_type::SERIAL_BUFFER_FULL))
     {
         ROS_ERROR_STREAM("SERIAL_BUFFER_FULL: RX buffer full and bytes are being lost.");
     }
 
-    if(errors & static_cast<unsigned short>(driver::error_type::SERIAL_CRC_ERROR))
+    if(errors & static_cast<uint16_t>(driver::error_type::SERIAL_CRC_ERROR))
     {
         ROS_ERROR_STREAM("SERIAL_CRC_RROR: CRC mismatch detected on last received packet.");
     }
 
-    if(errors & static_cast<unsigned short>(driver::error_type::SERIAL_PROTOCOL_ERROR))
+    if(errors & static_cast<uint16_t>(driver::error_type::SERIAL_PROTOCOL_ERROR))
     {
         ROS_ERROR_STREAM("SERIAL_PROTOCOL_ERROR: Invalid packet format received.");
     }
 
-    if(errors & static_cast<unsigned short>(driver::error_type::SERIAL_TIMEOUT))
+    if(errors & static_cast<uint16_t>(driver::error_type::SERIAL_TIMEOUT))
     {
         ROS_ERROR_STREAM("SERIAL_TIMEOUT: Timeout occured since last packet was received.");
     }
 
-    if(errors & static_cast<unsigned short>(driver::error_type::SCRIPT_CALL_STACK_ERROR))
+    if(errors & static_cast<uint16_t>(driver::error_type::SCRIPT_CALL_STACK_ERROR))
     {
         ROS_ERROR_STREAM("SCRIPT_CALL_STACK_ERROR: Script caused over/underflow in stack.");
     }
 
-    if(errors & static_cast<unsigned short>(driver::error_type::SCRIPT_CALL_STACK_ERROR))
+    if(errors & static_cast<uint16_t>(driver::error_type::SCRIPT_CALL_STACK_ERROR))
     {
         ROS_ERROR_STREAM("SCRIPT_CALL_STACK_ERROR: Script caused over/underflow in call stack.");
     }
 
-    if(errors & static_cast<unsigned short>(driver::error_type::SCRIPT_PROGRAM_COUNTER_ERROR))
+    if(errors & static_cast<uint16_t>(driver::error_type::SCRIPT_PROGRAM_COUNTER_ERROR))
     {
         ROS_ERROR_STREAM("SCRIPT_PROGRAM_COUNTER_ERROR: Script caused program counter has gone out of bounds.");
     }

@@ -3,13 +3,13 @@
 #include <endian.h>
 #include <stdexcept>
 
-driver::driver(std::string port, unsigned int baud_rate, unsigned char device_number, bool crc_enabled)
+driver::driver(std::string port, uint32_t baud_rate, uint8_t device_number, bool crc_enabled)
 {
     // Open the serial port.
     driver::m_serial_port = new serial::Serial(port, baud_rate, serial::Timeout::simpleTimeout(30));
 
     // Transmit a single 0xAA to initialize the automatic baud rate detection.
-    unsigned char initiator = 0xAA;
+    uint8_t initiator = 0xAA;
     driver::m_serial_port->write(&initiator, 1);
 
     // Store the device number.
@@ -29,10 +29,10 @@ driver::~driver()
 
 
 // SET METHODS
-void driver::set_target(unsigned char channel, unsigned short target)
+void driver::set_target(uint8_t channel, uint16_t target)
 {
     // Create data array.
-    unsigned char data[3];
+    uint8_t data[3];
     // Set channel.
     data[0] = channel;
     // Set target.
@@ -41,17 +41,17 @@ void driver::set_target(unsigned char channel, unsigned short target)
     // Send the message.
     driver::tx(0x04, data, 3);
 }
-void driver::set_target(std::vector<std::pair<unsigned char, unsigned short>> targets)
+void driver::set_target(std::vector<std::pair<uint8_t, uint16_t>> targets)
 {
     // Create data array.
-    unsigned int length = static_cast<unsigned int>(targets.size() * 3);
-    unsigned char* data = new unsigned char[length];
+    uint32_t length = static_cast<uint32_t>(targets.size() * 3);
+    uint8_t* data = new uint8_t[length];
 
     // Iterate through the channels.
-    for(unsigned int i = 0; i < targets.size(); i++)
+    for(uint32_t i = 0; i < targets.size(); i++)
     {
         // Get reference to pair.
-        std::pair<unsigned char, unsigned short>& current = targets.at(i);
+        std::pair<uint8_t, uint16_t>& current = targets.at(i);
         // Set channel.
         data[i*3] = current.first;
         // Set target.
@@ -64,10 +64,10 @@ void driver::set_target(std::vector<std::pair<unsigned char, unsigned short>> ta
     // Delete the data.
     delete [] data;
 }
-void driver::set_speed(unsigned char channel, unsigned short speed)
+void driver::set_speed(uint8_t channel, uint16_t speed)
 {
     // Create data array.
-    unsigned char data[3];
+    uint8_t data[3];
     // Set channel.
     data[0] = channel;
     // Set speed.
@@ -76,10 +76,10 @@ void driver::set_speed(unsigned char channel, unsigned short speed)
     // Send the message.
     driver::tx(0x07, data, 3);
 }
-void driver::set_acceleration(unsigned char channel, unsigned short acceleration)
+void driver::set_acceleration(uint8_t channel, uint16_t acceleration)
 {
     // Create data array.
-    unsigned char data[3];
+    uint8_t data[3];
     // Set channel.
     data[0] = channel;
     // Set acceleration
@@ -88,10 +88,10 @@ void driver::set_acceleration(unsigned char channel, unsigned short acceleration
     // Send the message.
     driver::tx(0x09, data, 3);
 }
-void driver::set_pwm(unsigned short on_time, unsigned short period)
+void driver::set_pwm(uint16_t on_time, uint16_t period)
 {
     // Create data array.
-    unsigned char data[4];
+    uint8_t data[4];
     // Set on_time.
     driver::serialize(on_time, &data[0]);
     // Set period.
@@ -107,15 +107,15 @@ void driver::go_home()
 
 
 // GET METHODS
-unsigned short driver::get_position(unsigned char channel)
+uint16_t driver::get_position(uint8_t channel)
 {
     // Create data array.
-    unsigned char data[1] = {channel};
+    uint8_t data[1] = {channel};
     // Send the message.
     driver::tx(0x10, data, 1);
 
     // Read the response.
-    unsigned char response[2];
+    uint8_t response[2];
     if(driver::rx(response, 2))
     {
         // Deserialize response.
@@ -132,7 +132,7 @@ bool driver::get_moving_state()
     driver::tx(0x13, nullptr, 0);
 
     // Read the response.
-    unsigned char response[1];
+    uint8_t response[1];
     if(driver::rx(response, 1))
     {
         // Deserialize response.
@@ -143,13 +143,13 @@ bool driver::get_moving_state()
         throw std::runtime_error("get_moving_state: read timeout.");
     }
 }
-unsigned short driver::get_errors()
+uint16_t driver::get_errors()
 {
     // Send the message.
     driver::tx(0x21, nullptr, 0);
 
     // Read the response.
-    unsigned char response[2];
+    uint8_t response[2];
     if(driver::rx(response, 2))
     {
         // Deserialize response.
@@ -162,12 +162,12 @@ unsigned short driver::get_errors()
 }
 
 // TRANSMISSION METHODS
-void driver::tx(unsigned char command, unsigned char *data, unsigned int data_length)
+void driver::tx(uint8_t command, uint8_t *data, uint32_t data_length)
 {
     // Create a new packet to send.
     // Pololu Protocol: Header (1), Device Number (1), Command ID (1), data bytes, Checksum if enabled (1)
-    unsigned int packet_length = 3 + data_length + static_cast<unsigned int>(driver::m_crc_enabled);
-    unsigned char* packet = new unsigned char[packet_length];
+    uint32_t packet_length = 3 + data_length + static_cast<uint32_t>(driver::m_crc_enabled);
+    uint8_t* packet = new uint8_t[packet_length];
 
     // Set packet fields.
     packet[0] = 0xAA;
@@ -190,7 +190,7 @@ void driver::tx(unsigned char command, unsigned char *data, unsigned int data_le
     // Delete the packet.
     delete [] packet;
 }
-bool driver::rx(unsigned char *data, unsigned int length)
+bool driver::rx(uint8_t *data, uint32_t length)
 {
     // Read bytes from the serial port.
     unsigned long n_read = driver::m_serial_port->read(data, length);
@@ -198,19 +198,19 @@ bool driver::rx(unsigned char *data, unsigned int length)
     // Return if amount of bytes were read before timeout.
     return n_read == length;
 }
-unsigned char driver::checksum(unsigned char *packet, unsigned int length)
+uint8_t driver::checksum(uint8_t *packet, uint32_t length)
 {
     // Calculate the CRC-7 checksum (https://www.pololu.com/docs/0J44/6.7.6)
-    const unsigned char polynomial = 0x91;
+    const uint8_t polynomial = 0x91;
 
-    unsigned char crc = 0;
+    uint8_t crc = 0;
 
     // Iterate over the bytes of the message.
-    for(unsigned int i = 0; i < length; i++)
+    for(uint32_t i = 0; i < length; i++)
     {
         crc ^= packet[i];
         // Iterate over the bits of the current byte.
-        for(unsigned char j = 0; j < 8; j++)
+        for(uint8_t j = 0; j < 8; j++)
         {
             if(crc & 1)
             {
@@ -222,21 +222,21 @@ unsigned char driver::checksum(unsigned char *packet, unsigned int length)
 
     return crc;
 }
-void driver::serialize(unsigned short value, unsigned char *buffer)
+void driver::serialize(uint16_t value, uint8_t *buffer)
 {
     // Convert target to little endian.
-    unsigned short le_value = htole16(value);
+    uint16_t le_value = htole16(value);
     // Populate data field.
     buffer[0] = le_value & 0x007F; // Grabs lower 7 bytes.
     buffer[1] = (le_value & 0x3F80u) >> 7 ; // Grabs upper 7 bytes.
 }
-unsigned short driver::deserialize(unsigned char *buffer)
+uint16_t driver::deserialize(uint8_t *buffer)
 {
     // Create output variable.
-    unsigned short output;
+    uint16_t output;
     // Deserialize the little endian 8-bit buffer.
     output = buffer[0];
-    output |= (static_cast<unsigned short>(buffer[1]) << 8);
+    output |= (static_cast<uint16_t>(buffer[1]) << 8);
     // Convert from little endian to host.
     return le16toh(output);
 }
