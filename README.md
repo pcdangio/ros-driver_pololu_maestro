@@ -23,6 +23,7 @@ The driver_pololu_maestro package has been tested under [ROS] Melodic and Ubuntu
 
 - [Robot Operating System (ROS)](http://wiki.ros.org) (middleware for robotics)
 - [serial](http://wiki.ros.org/serial) (ROS serial package)
+- [actuator_msgs](https://github.com/pcdangio/ros-actuator_msgs) (ROS actuator messages)
 
 #### Building
 
@@ -37,7 +38,7 @@ To build from source, clone the latest version from this repository into your ca
 
 Run the driver node with:
 
-        rosrun driver_pololu_maestro node
+        rosrun driver_pololu_maestro driver_pololu_maestro
 
 ## Nodes
 
@@ -47,7 +48,7 @@ A driver for the Pololu [Maestro].
 
 
 #### Published Topics
-* **`servo_controller/position/channel_X`** ([actuator_msgs/ServoState](https://github.com/pcdangio/ros-actuator_msgs/blob/master/msg/ServoState.msg))
+* **`servo_controller/position/channel_X`** ([actuator_msgs/servo_state](https://github.com/pcdangio/ros-actuator_msgs/blob/master/msg/servo_state.msg))
 
         Provides the current expected position of a servo in PWM microseconds.
         Multiple versions of this topic are published based on the specified channels in use on the Maestro.  See "channels" in the Parameters section below.
@@ -56,7 +57,7 @@ A driver for the Pololu [Maestro].
 
 #### Subscribed Topics
 
-* **`servo_controller/set_target/channel_X`** ([actuator_msgs/ServoCommand](https://github.com/pcdangio/ros-actuator_msgs/blob/master/msg/ServoCommand.msg))
+* **`servo_controller/set_target/channel_X`** ([actuator_msgs/servo_target](https://github.com/pcdangio/ros-actuator_msgs/blob/master/msg/servo_target.msg))
 
         Sets the target position, speed limit, and acceleration of a specified servo in PWM microseconds.
         Multiple versions of this topic are subscribed to based on the specified channels in use on the Maestro.  See "channels" in the Parameters section below.
